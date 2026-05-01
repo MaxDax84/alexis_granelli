@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modulo Cliente — Alexis Granelli Sleep Coaching</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #fdf8f4;
+      --card: #ffffff;
+      --primary: #7c5c8a;
+      --primary-light: #a07cb0;
+      --accent: #e8d5f0;
+      --text: #2d2d2d;
+      --muted: #6b6b6b;
+      --border: #d9cfe3;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(124, 92, 138, 0.10);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 60px;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      text-align: center;
+      padding: 48px 24px 36px;
+    }
+    header h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; }
+    header p  { margin-top: 8px; opacity: .85; font-size: 1rem; }
+
+    /* ── Progress bar ── */
+    #progress-wrap {
+      background: var(--accent);
+      height: 6px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    #progress-bar {
+      height: 100%;
+      background: var(--primary);
+      transition: width .4s ease;
+      width: 0%;
+    }
+
+    /* ── Step indicators ── */
+    #step-indicators {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px 16px 0;
+      flex-wrap: wrap;
+    }
+    .step-dot {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--border);
+      color: var(--muted);
+      font-size: .75rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      cursor: default;
+      transition: all .3s;
+    }
+    .step-dot.active  { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .step-dot.done    { background: var(--primary-light); border-color: var(--primary-light); color: #fff; }
+
+    /* ── Form container ── */
+    #form-container {
+      max-width: 760px;
+      margin: 24px auto 0;
+      padding: 0 16px;
+    }
+
+    /* ── Step panel ── */
+    .step-panel {
+      display: none;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 36px 40px;
+      animation: fadeIn .35s ease;
+    }
+    .step-panel.active { display: block; }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+
+    .step-panel h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--accent);
+    }
+    .step-panel h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin: 28px 0 14px;
+    }
+
+    /* ── Field groups ── */
+    .field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .field-group.full { grid-template-columns: 1fr; }
+    @media (max-width: 560px) { .field-group { grid-template-columns: 1fr; } }
+
+    /* ── Field ── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    label span.req { color: var(--primary); }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="date"],
+    select,
+    textarea {
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: .95rem;
+      font-family: inherit;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .2s, box-shadow .2s;
+      width: 100%;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(124,92,138,.15);
+    }
+    textarea { resize: vertical; min-height: 90px; }
+
+    /* ── Radio / Yes-No ── */
+    .yn-group {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      margin: 4px 0;
+      flex-wrap: wrap;
+    }
+    .yn-group label {
+      font-size: .9rem;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .yn-group input[type="radio"] {
+      accent-color: var(--primary);
+      width: 16px; height: 16px;
+    }
+
+    /* ── Conditional reveal ── */
+    .conditional { display: none; margin-top: 10px; }
+    .conditional.show { display: block; }
+
+    /* ── Sub-question ── */
+    .sub-q {
+      background: var(--bg);
+      border-left: 3px solid var(--border);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 16px;
+      margin: 10px 0;
+    }
+    .sub-q .field-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .sub-q .field-row:last-child { margin-bottom: 0; }
+    .sub-q .field-row > label {
+      min-width: 160px;
+      font-size: .85rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    /* ── Table-like children list ── */
+    .children-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    .children-table th {
+      text-align: left;
+      font-size: .78rem;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .children-table td { padding: 6px 10px; }
+    .children-table input { border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; width: 100%; font-size: .9rem; }
+
+    /* ── Navigation ── */
+    .nav-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 36px;
+      gap: 12px;
+    }
+    .btn {
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { opacity: .88; }
+    .btn-secondary { background: var(--accent); color: var(--primary); }
+    .btn-secondary:hover { opacity: .8; }
+    .btn-submit { background: #4caf50; color: #fff; }
+    .btn-submit:hover { opacity: .88; }
+
+    /* ── Success message ── */
+    #success-panel {
+      display: none;
+      text-align: center;
+      padding: 60px 40px;
+    }
+    #success-panel.active { display: block; }
+    #success-panel .icon { font-size: 4rem; margin-bottom: 16px; }
+    #success-panel h2 { color: var(--primary); font-size: 1.5rem; margin-bottom: 12px; }
+    #success-panel p  { color: var(--muted); line-height: 1.6; }
+
+    /* ── Divider ── */
+    hr.section { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    /* ── Milestone grid ── */
+    .milestone-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px 20px;
+    }
+    @media (max-width: 560px) { .milestone-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Sleep Coaching — Modulo Cliente</h1>
+  <p>Alexis Granelli &nbsp;·&nbsp; Compila il modulo online in pochi minuti</p>
+</header>
+
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+
+<div id="step-indicators">
+  <div class="step-dot active" id="dot-1">1</div>
+  <div class="step-dot" id="dot-2">2</div>
+  <div class="step-dot" id="dot-3">3</div>
+  <div class="step-dot" id="dot-4">4</div>
+  <div class="step-dot" id="dot-5">5</div>
+</div>
+
+<div id="form-container">
+  <form id="client-form" action="https://formspree.io/f/PLACEHOLDER" method="POST">
+
+    <!-- ════════════════════════════════════════
+         STEP 1 — Informazioni Genitori
+    ═════════════════════════════════════════ -->
+    <div class="step-panel active" id="step-1">
+      <h2>1 · Informazioni Genitori</h2>
+
+      <h3>Genitore 1</h3>
+      <div class="field-group">
+        <div class="field">
+          <label>Nome <span class="req">*</span></label>
+          <input type="text" name="g1_nome" required placeholder="Nome" />
+        </div>
+        <div class="field">
+          <label>Cognome <span class="req">*</span></label>
+          <input type="text" name="g1_cognome" required placeholder="Cognome" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Età</label>
+          <input type="text" name="g1_eta" placeholder="es. 34" />
+        </div>
+        <div class="field">
+          <label>Professione</label>
+          <input type="text" name="g1_professione" placeholder="Professione" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Email <span class="req">*</span></label>
+          <input type="email" name="g1_email" required placeholder="email@esempio.com" />
+        </div>
+        <div class="field">
+          <label>Telefono</label>
+          <input type="text" name="g1_telefono" placeholder="+39 333 000 0000" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Codice Fiscale (fatturazione)</label>
+          <input type="text" name="g1_cf" placeholder="RSSMRA80A01H501Z" />
+        </div>
+        <div class="field">
+          <label>Regione</label>
+          <input type="text" name="g1_regione" placeholder="es. Lombardia" />
+        </div>
+      </div>
+      <div class="field-group full">
+        <div class="field">
+          <label>Indirizzo &amp; CAP</label>
+          <input type="text" name="g1_indirizzo" placeholder="Via, numero civico, CAP, Città" />
+        </div>
+      </div>
+
+      <hr class="section" />
+
+      <h3>Genitore 2 <span style="font-weight:400;color:var(--muted)">(se applicabile)</span></h3>
+      <div class="field-group">
+        <div class="field">
+          <label>Nome</label>
+          <input type="text" name="g2_nome" placeholder="Nome" />
+        </div>
+        <div class="field">
+          <label>Cognome</label>
+          <input type="text" name="g2_cognome" placeholder="Cognome" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Età</label>
+          <input type="text" name="g2_eta" placeholder="es. 32" />
+        </div>
+        <div class="field">
+          <label>Professione</label>
+          <input type="text" name="g2_professione" placeholder="Professione" />
+        </div>
+      </div>
+      <div class="field-group">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" name="g2_email" placeholder="email@esempio.com" />
+        </div>
+        <div class="field">
+          <label>Telefono</label>
+          <input type="text" name="g2_telefono" placeholder="+39 333 000 0000" />
+        </div>
+      </div>
+
+      <hr class="section" />
+
+      <h3>Altre persone in casa</h3>
+      <div class="field-group full">
+        <div class="field">
+          <label>Nonni, tata, altre persone conviventi</label>
+          <textarea name="altre_persone" placeholder="Descrivi brevemente chi altro vive in casa…"></textarea>
+        </div>
+      </div>
+
+      <h3>Altri figli</h3>
+      <table class="children-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Data di nascita / Età</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="text" name="figlio1_nome" placeholder="Nome" /></td>
+            <td><input type="text" name="figlio1_eta" placeholder="es. 3 anni" /></td>
+          </tr>
+          <tr>
+            <td><input type="text" name="figlio2_nome" placeholder="Nome" /></td>
+            <td><input type="text" name="figlio2_eta" placeholder="es. 5 anni" /></td>
+          </tr>
+          <tr>
+            <td><input type="text" name="figlio3_nome" placeholder="Nome" /></td>
+            <td><input type="text" name="figlio3_eta" placeholder="es. 7 anni" /></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="font-size:.82rem;color:var(--muted);margin-top:8px;">Per quale figlio stai compilando il modulo? (indica nel campo nome del bambino al passo successivo)</p>
+
+      <hr class="section" />
+
+      <div class="field-group">
+        <div class="field">
+          <label>Come ha sentito parlare di me?</label>
+          <input type="text" name="come_conosciuto" placeholder="Passaparola, social, ricerca web…" />
+        </div>
+        <div class="field">
+          <label>Conosceva già lo sleep coaching?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="conosceva_sleep" value="Sì" /> Sì</label>
+            <label><input type="radio" name="conosceva_sleep" value="No" /> No</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <span></span>
+        <button type="button" class="btn btn-primary" onclick="goTo(2)">Avanti →</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         STEP 2 — Storia del bambino
+    ═════════════════════════════════════════ -->
+    <div class="step-panel" id="step-2">
+      <h2>2 · Storia del Bambino</h2>
+
+      <div class="field-group">
+        <div class="field">
+          <label>Nome del bambino <span class="req">*</span></label>
+          <input type="text" name="bambino_nome" required placeholder="Nome" />
+        </div>
+        <div class="field">
+          <label>Data di nascita</label>
+          <input type="date" name="bambino_nascita" />
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Gravidanza</h3>
+
+      <div class="sub-q">
+        <div class="field-row">
+          <label>Gravidanza prevista?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="grav_prevista" value="Sì" /> Sì</label>
+            <label><input type="radio" name="grav_prevista" value="No" /> No</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Problemi durante la gravidanza?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="grav_problemi" value="Sì" onchange="toggleConditional(this,'grav_problemi_desc')" /> Sì</label>
+            <label><input type="radio" name="grav_problemi" value="No" onchange="toggleConditional(this,'grav_problemi_desc')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="grav_problemi_desc">
+          <textarea name="grav_problemi_testo" placeholder="Descrivi i problemi durante la gravidanza…"></textarea>
+        </div>
+        <div class="field-row">
+          <label>Tipo di parto</label>
+          <div class="yn-group">
+            <label><input type="radio" name="tipo_parto" value="Spontaneo" /> Spontaneo</label>
+            <label><input type="radio" name="tipo_parto" value="Cesareo" /> Cesareo</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Complicazioni al parto?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="parto_compl" value="Sì" onchange="toggleConditional(this,'parto_compl_desc')" /> Sì</label>
+            <label><input type="radio" name="parto_compl" value="No" onchange="toggleConditional(this,'parto_compl_desc')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="parto_compl_desc">
+          <textarea name="parto_compl_testo" placeholder="Descrivi le complicazioni…"></textarea>
+        </div>
+        <div class="field-row">
+          <label>A quante settimane è nato?</label>
+          <input type="text" name="settimane_nascita" placeholder="es. 38" style="max-width:120px" />
+        </div>
+      </div>
+
+      <h3>Problemi medici</h3>
+      <div class="sub-q">
+        <div class="field-row">
+          <label>Ci sono stati problemi medici?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="prob_medici" value="Sì" onchange="toggleConditional(this,'prob_medici_desc')" /> Sì</label>
+            <label><input type="radio" name="prob_medici" value="No" onchange="toggleConditional(this,'prob_medici_desc')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="prob_medici_desc">
+          <textarea name="prob_medici_testo" placeholder="Descrivi i problemi medici…"></textarea>
+        </div>
+      </div>
+
+      <h3>Domande per la mamma</h3>
+      <div class="sub-q">
+        <div class="field-row">
+          <label>Riesce a dormire quando suo figlio dorme?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="mamma_dorme" value="Sì" /> Sì</label>
+            <label><input type="radio" name="mamma_dorme" value="No" /> No</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Ha perso l'appetito dopo il parto?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="mamma_appetito" value="Sì" /> Sì</label>
+            <label><input type="radio" name="mamma_appetito" value="No" /> No</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Pensieri negativi o che fanno paura?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="mamma_pensieri" value="Sì" /> Sì</label>
+            <label><input type="radio" name="mamma_pensieri" value="No" /> No</label>
+          </div>
+        </div>
+      </div>
+
+      <h3>Pediatra</h3>
+      <div class="field-group full">
+        <div class="field">
+          <label>Nome del pediatra</label>
+          <input type="text" name="pediatra_nome" placeholder="Dott. …" />
+        </div>
+      </div>
+      <div class="sub-q">
+        <div class="field-row">
+          <label>Il pediatra ha escluso problemi medici che causano i disturbi del sonno?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="ped_escluso" value="Sì" /> Sì</label>
+            <label><input type="radio" name="ped_escluso" value="No" /> No</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Il pediatra direbbe che suo figlio può dormire tutta la notte?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="ped_dormire" value="Sì" /> Sì</label>
+            <label><input type="radio" name="ped_dormire" value="No" /> No</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Peso attuale del bambino</label>
+          <input type="text" name="bambino_peso" placeholder="es. 8 kg" style="max-width:150px" />
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-secondary" onclick="goTo(1)">← Indietro</button>
+        <button type="button" class="btn btn-primary" onclick="goTo(3)">Avanti →</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         STEP 3 — Sviluppo e Salute
+    ═════════════════════════════════════════ -->
+    <div class="step-panel" id="step-3">
+      <h2>3 · Sviluppo e Salute</h2>
+
+      <h3>Fasi di crescita <span style="font-weight:400;color:var(--muted)">(età approssimativa)</span></h3>
+      <div class="milestone-grid">
+        <div class="field">
+          <label>Rotolare</label>
+          <input type="text" name="ms_rotolare" placeholder="es. 4 mesi" />
+        </div>
+        <div class="field">
+          <label>Sedersi</label>
+          <input type="text" name="ms_sedersi" placeholder="es. 6 mesi" />
+        </div>
+        <div class="field">
+          <label>Strisciare</label>
+          <input type="text" name="ms_strisciare" placeholder="es. 7 mesi" />
+        </div>
+        <div class="field">
+          <label>Gattonare</label>
+          <input type="text" name="ms_gattonare" placeholder="es. 8 mesi" />
+        </div>
+        <div class="field">
+          <label>Stare in piedi</label>
+          <input type="text" name="ms_piedi" placeholder="es. 10 mesi" />
+        </div>
+        <div class="field">
+          <label>Camminare</label>
+          <input type="text" name="ms_camminare" placeholder="es. 12 mesi" />
+        </div>
+        <div class="field">
+          <label>Prima parola</label>
+          <input type="text" name="ms_parola" placeholder="es. 11 mesi" />
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Alimentazione</h3>
+      <div class="sub-q">
+        <div class="field-row">
+          <label>Tipo di latte</label>
+          <div class="yn-group" style="flex-wrap:wrap;gap:12px">
+            <label><input type="radio" name="tipo_latte" value="Al seno" /> Al seno</label>
+            <label><input type="radio" name="tipo_latte" value="Artificiale" /> Artificiale</label>
+            <label><input type="radio" name="tipo_latte" value="Entrambi" /> Entrambi</label>
+            <label><input type="radio" name="tipo_latte" value="Svezzato" /> Svezzato</label>
+          </div>
+        </div>
+        <div class="field-row" id="allattamento-row">
+          <label>Vuole continuare ad allattare?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="allattare_giorno" value="Di giorno" /> Di giorno</label>
+            <label><input type="radio" name="allattare_giorno" value="Di notte" /> Di notte</label>
+            <label><input type="radio" name="allattare_giorno" value="Entrambi" /> Entrambi</label>
+            <label><input type="radio" name="allattare_giorno" value="No" /> No</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Ha iniziato le pappe?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="pappe" value="Sì" onchange="toggleConditional(this,'pappe_eta')" /> Sì</label>
+            <label><input type="radio" name="pappe" value="No" onchange="toggleConditional(this,'pappe_eta')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="pappe_eta">
+          <input type="text" name="pappe_eta_testo" placeholder="A che età ha iniziato?" style="max-width:200px" />
+        </div>
+        <div class="field-row">
+          <label>Usa</label>
+          <div class="yn-group">
+            <label><input type="radio" name="biberon_tazza" value="Biberon" /> Biberon</label>
+            <label><input type="radio" name="biberon_tazza" value="Tazza" /> Tazza</label>
+            <label><input type="radio" name="biberon_tazza" value="Entrambi" /> Entrambi</label>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Oggetti / abitudini</h3>
+      <div class="sub-q">
+        <div class="field-row">
+          <label>Succhia il pollice / le dita?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="pollice" value="Sì" /> Sì</label>
+            <label><input type="radio" name="pollice" value="No" /> No</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Usa il ciuccio?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="ciuccio" value="Sì" onchange="toggleConditional(this,'ciuccio_quando')" /> Sì</label>
+            <label><input type="radio" name="ciuccio" value="No" onchange="toggleConditional(this,'ciuccio_quando')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="ciuccio_quando">
+          <input type="text" name="ciuccio_quando_testo" placeholder="Quando lo usa?" style="max-width:300px" />
+        </div>
+        <div class="field-row">
+          <label>Ha un oggetto di sicurezza (coperta, peluche…)?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="oggetto_sic" value="Sì" /> Sì</label>
+            <label><input type="radio" name="oggetto_sic" value="No" /> No</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Gli viene data la melatonina?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="melatonina" value="Sì" /> Sì</label>
+            <label><input type="radio" name="melatonina" value="No" /> No</label>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Comportamento durante il sonno</h3>
+      <div class="sub-q">
+        <div class="field-row"><label>Russa?</label>
+          <div class="yn-group"><label><input type="radio" name="russa" value="Sì" /> Sì</label><label><input type="radio" name="russa" value="No" /> No</label></div>
+        </div>
+        <div class="field-row"><label>Respira con la bocca?</label>
+          <div class="yn-group"><label><input type="radio" name="bocca" value="Sì" /> Sì</label><label><input type="radio" name="bocca" value="No" /> No</label></div>
+        </div>
+        <div class="field-row"><label>Cade dal letto?</label>
+          <div class="yn-group"><label><input type="radio" name="cade" value="Sì" /> Sì</label><label><input type="radio" name="cade" value="No" /> No</label></div>
+        </div>
+        <div class="field-row"><label>Si muove tanto?</label>
+          <div class="yn-group"><label><input type="radio" name="muove" value="Sì" /> Sì</label><label><input type="radio" name="muove" value="No" /> No</label></div>
+        </div>
+        <div class="field-row"><label>Suda?</label>
+          <div class="yn-group"><label><input type="radio" name="suda" value="Sì" /> Sì</label><label><input type="radio" name="suda" value="No" /> No</label></div>
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Reflusso / coliche</h3>
+      <div class="sub-q">
+        <div class="field-row">
+          <label>Ha (o ha avuto) reflusso o coliche?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="reflusso" value="Sì" onchange="toggleConditional(this,'reflusso_dettagli')" /> Sì</label>
+            <label><input type="radio" name="reflusso" value="No" onchange="toggleConditional(this,'reflusso_dettagli')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="reflusso_dettagli">
+          <div class="field-group">
+            <div class="field">
+              <label>Quanto è durato?</label>
+              <input type="text" name="reflusso_durata" placeholder="es. 3 mesi" />
+            </div>
+            <div class="field">
+              <label>Quando è stato risolto?</label>
+              <input type="text" name="reflusso_risolto" placeholder="es. a 5 mesi" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Cosa ha aiutato?</label>
+            <textarea name="reflusso_aiuto" placeholder="Cosa ha aiutato a risolvere il problema?"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Condizioni mediche</h3>
+      <div class="sub-q">
+        <div class="field-row"><label>Allergie</label>
+          <div class="yn-group"><label><input type="radio" name="allergie" value="Sì" /> Sì</label><label><input type="radio" name="allergie" value="No" /> No</label></div>
+        </div>
+        <div class="field-row"><label>Frequenti otiti</label>
+          <div class="yn-group"><label><input type="radio" name="otiti" value="Sì" /> Sì</label><label><input type="radio" name="otiti" value="No" /> No</label></div>
+        </div>
+        <div class="field-row"><label>Asma</label>
+          <div class="yn-group"><label><input type="radio" name="asma" value="Sì" /> Sì</label><label><input type="radio" name="asma" value="No" /> No</label></div>
+        </div>
+        <div class="field-row"><label>Naso chiuso frequente o costante</label>
+          <div class="yn-group"><label><input type="radio" name="naso" value="Sì" /> Sì</label><label><input type="radio" name="naso" value="No" /> No</label></div>
+        </div>
+      </div>
+
+      <h3>Incubi</h3>
+      <div class="sub-q">
+        <div class="field-row">
+          <label>Il bambino ha degli incubi?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="incubi" value="Sì" onchange="toggleConditional(this,'incubi_det')" /> Sì</label>
+            <label><input type="radio" name="incubi" value="No" onchange="toggleConditional(this,'incubi_det')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="incubi_det">
+          <input type="text" name="incubi_freq" placeholder="Con quale frequenza e a che ora della notte?" />
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-secondary" onclick="goTo(2)">← Indietro</button>
+        <button type="button" class="btn btn-primary" onclick="goTo(4)">Avanti →</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         STEP 4 — Abitudini del Sonno
+    ═════════════════════════════════════════ -->
+    <div class="step-panel" id="step-4">
+      <h2>4 · Abitudini del Sonno</h2>
+
+      <div class="field-group full">
+        <div class="field">
+          <label>I disturbi del sonno sono nuovi o durano dall'infanzia?</label>
+          <textarea name="disturbi_durata" placeholder="Da quando esistono questi problemi di sonno?"></textarea>
+        </div>
+      </div>
+
+      <div class="field-group full">
+        <div class="field">
+          <label>Quali tecniche ha già provato?</label>
+          <textarea name="tecniche_provate" placeholder="Descrivi le tecniche utilizzate fino ad ora…"></textarea>
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Dove dorme il bambino</h3>
+      <div class="sub-q">
+        <div class="field-row">
+          <label>Tipo di letto</label>
+          <div class="yn-group" style="flex-wrap:wrap">
+            <label><input type="radio" name="tipo_letto" value="Culla" /> Culla</label>
+            <label><input type="radio" name="tipo_letto" value="Lettino con sbarre" /> Lettino con sbarre</label>
+            <label><input type="radio" name="tipo_letto" value="Lettino senza sbarre" /> Lettino senza sbarre</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Dove dorme attualmente?</label>
+          <div class="yn-group" style="flex-wrap:wrap">
+            <label><input type="radio" name="dove_dorme" value="Stanza sua" /> Stanza sua</label>
+            <label><input type="radio" name="dove_dorme" value="Stanza dei genitori" /> Stanza dei genitori</label>
+            <label><input type="radio" name="dove_dorme" value="Letto dei genitori" /> Letto dei genitori</label>
+          </div>
+        </div>
+        <div class="field-row">
+          <label>Dove vorreste che dormisse idealmente?</label>
+          <input type="text" name="dove_ideale" placeholder="Descrivete la situazione ideale…" />
+        </div>
+        <div class="field-row">
+          <label>Condivide la camera con qualcuno?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="condivide" value="Sì" onchange="toggleConditional(this,'condivide_con')" /> Sì</label>
+            <label><input type="radio" name="condivide" value="No" onchange="toggleConditional(this,'condivide_con')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="condivide_con">
+          <input type="text" name="condivide_con_chi" placeholder="Con chi? (genitore, fratello, sorella…)" />
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Routine e addormentamento</h3>
+
+      <div class="field-group full">
+        <div class="field">
+          <label>Come lo fate addormentare? Descrivi la routine.</label>
+          <textarea name="routine_sonno" placeholder="Descrivi passo per passo come addormentate il bambino…"></textarea>
+        </div>
+      </div>
+
+      <div class="sub-q">
+        <div class="field-row">
+          <label>C'è un orario fisso per andare a letto?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="orario_fisso" value="Sì" onchange="toggleConditional(this,'orario_fisso_val')" /> Sì</label>
+            <label><input type="radio" name="orario_fisso" value="No" onchange="toggleConditional(this,'orario_fisso_val')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="orario_fisso_val">
+          <input type="text" name="orario_val" placeholder="A che ora?" style="max-width:150px" />
+        </div>
+        <div class="field-row">
+          <label>Se ha altri figli, vanno a letto tutti insieme?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="tutti_insieme" value="Sì" /> Sì</label>
+            <label><input type="radio" name="tutti_insieme" value="No" /> No</label>
+            <label><input type="radio" name="tutti_insieme" value="N/A" /> N/A</label>
+          </div>
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Comportamenti</h3>
+      <div class="sub-q">
+        <div class="field-row"><label>Il bambino ha paura del buio?</label>
+          <div class="yn-group"><label><input type="radio" name="paura_buio" value="Sì" /> Sì</label><label><input type="radio" name="paura_buio" value="No" /> No</label></div>
+        </div>
+        <div class="field-row"><label>I genitori hanno paura del buio?</label>
+          <div class="yn-group"><label><input type="radio" name="genitori_buio" value="Sì" /> Sì</label><label><input type="radio" name="genitori_buio" value="No" /> No</label></div>
+        </div>
+        <div class="field-row"><label>Il bambino è angosciato quando viene lasciato solo?</label>
+          <div class="yn-group">
+            <label><input type="radio" name="angoscia" value="Sì" onchange="toggleConditional(this,'angoscia_det')" /> Sì</label>
+            <label><input type="radio" name="angoscia" value="No" onchange="toggleConditional(this,'angoscia_det')" /> No</label>
+          </div>
+        </div>
+        <div class="conditional" id="angoscia_det">
+          <input type="text" name="angoscia_cosa" placeholder="Cosa fa quando viene lasciato solo?" />
+        </div>
+        <div class="field-row"><label>Batte la testa o la dondola avanti/indietro?</label>
+          <div class="yn-group"><label><input type="radio" name="testa" value="Sì" /> Sì</label><label><input type="radio" name="testa" value="No" /> No</label></div>
+        </div>
+      </div>
+
+      <hr class="section" />
+      <h3>Risvegli notturni</h3>
+      <div class="field-group full">
+        <div class="field">
+          <label>Esiste uno schema per i risvegli notturni? (es. si sveglia sempre alle stesse ore?)</label>
+          <textarea name="schema_risvegli" placeholder="Descrivi lo schema dei risvegli, se presente…"></textarea>
+        </div>
+      </div>
+
+      <h3>Temperamento e autonomia</h3>
+      <div class="field-group full">
+        <div class="field">
+          <label>Come descriveresti il temperamento di tuo figlio?</label>
+          <textarea name="temperamento" placeholder="Calmo, vivace, sensibile, curioso…"></textarea>
+        </div>
+      </div>
+      <div class="field-group full">
+        <div class="field">
+          <label>Cosa fa il bambino quando trascorre del tempo da solo?</label>
+          <textarea name="tempo_solo" placeholder="Gioca, piange, esplora…"></textarea>
+        </div>
+      </div>
+      <div class="field-group full">
+        <div class="field">
+          <label>Ci sono rituali o cose che il bambino fa per auto-calmarsi?</label>
+          <textarea name="auto_calma" placeholder="Es. succhia il ciuccio, abbraccia il peluche…"></textarea>
+        </div>
+      </div>
+
+      <div class="field-group full">
+        <div class="field">
+          <label>Se hai altri figli, hanno avuto problemi di sonno? Come hai affrontato la situazione?</label>
+          <textarea name="altri_figli_sonno" placeholder="Descrivi l'esperienza con altri figli…"></textarea>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-secondary" onclick="goTo(3)">← Indietro</button>
+        <button type="button" class="btn btn-primary" onclick="goTo(5)">Avanti →</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         STEP 5 — Programma e Obiettivi
+    ═════════════════════════════════════════ -->
+    <div class="step-panel" id="step-5">
+      <h2>5 · Programma e Obiettivi</h2>
+
+      <div class="field-group full">
+        <div class="field">
+          <label>Descrivi il programma tipico di 24 ore <span class="req">*</span></label>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px;">
+            Includi: orario di sveglio, pasti, riposini, routine serale, eventuali risvegli notturni. Descrivi come viene addormentato sia per i riposini che la sera e cosa succede quando si sveglia.
+          </p>
+          <textarea name="programma_24h" required rows="8" placeholder="Es: Sveglio alle 7:00 → colazione alle 8:00 → riposino alle 10:00, dura circa 45 min, lo addormentano allattandolo → pranzo alle 12:30 → …"></textarea>
+        </div>
+      </div>
+
+      <hr class="section" />
+
+      <div class="field-group full">
+        <div class="field">
+          <label>Qual è il risultato finale che vorreste raggiungere? <span class="req">*</span></label>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:8px;">
+            Siate specifici: come vorreste che fosse il programma e le abitudini di sonno di vostro figlio al termine del percorso?
+          </p>
+          <textarea name="obiettivo" required rows="5" placeholder="Es: Vorremmo che il bambino si addormentasse da solo nella sua culla entro le 20:00, dormisse almeno 5 ore consecutive senza svegliarsi, e che i riposini durassero almeno un'ora…"></textarea>
+        </div>
+      </div>
+
+      <hr class="section" />
+
+      <div class="field-group full">
+        <div class="field">
+          <label>Note aggiuntive o domande</label>
+          <textarea name="note" rows="4" placeholder="Qualsiasi altra informazione che ritieni utile condividere…"></textarea>
+        </div>
+      </div>
+
+      <!-- Hidden fields -->
+      <input type="hidden" name="_subject" value="Nuovo Modulo Cliente — Sleep Coaching" />
+      <input type="text" name="_gotcha" style="display:none" />
+
+      <div class="nav-row">
+        <button type="button" class="btn btn-secondary" onclick="goTo(4)">← Indietro</button>
+        <button type="submit" class="btn btn-submit">Invia Modulo ✓</button>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SUCCESS
+    ═════════════════════════════════════════ -->
+    <div id="success-panel">
+      <div class="icon">🌙</div>
+      <h2>Modulo inviato con successo!</h2>
+      <p>Grazie per aver compilato il modulo.<br />Alexis ti contatterà a breve per programmare la vostra consulenza.</p>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  const TOTAL_STEPS = 5;
+  let currentStep = 1;
+
+  function goTo(n) {
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    document.getElementById('dot-' + currentStep).classList.remove('active');
+    document.getElementById('dot-' + currentStep).classList.add('done');
+    currentStep = n;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    document.getElementById('dot-' + currentStep).classList.add('active');
+    document.getElementById('dot-' + currentStep).classList.remove('done');
+    document.getElementById('progress-bar').style.width = ((n - 1) / (TOTAL_STEPS - 1) * 100) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleConditional(radio, id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('show', radio.value === 'Sì');
+  }
+
+  // Handle form submission — show success panel instead of redirect
+  document.getElementById('client-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const data = new FormData(form);
+    try {
+      const res = await fetch(form.action, { method: 'POST', body: data, headers: { 'Accept': 'application/json' } });
+      if (res.ok) {
+        form.style.display = 'none';
+        document.getElementById('success-panel').classList.add('active');
+        document.getElementById('progress-bar').style.width = '100%';
+        document.getElementById('step-indicators').style.display = 'none';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        alert('Si è verificato un errore durante l\'invio. Riprova o contatta Alexis direttamente.');
+      }
+    } catch {
+      alert('Errore di rete. Controlla la connessione e riprova.');
+    }
+  });
+</script>
+</body>
+</html>
