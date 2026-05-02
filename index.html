@@ -253,6 +253,7 @@
     }
     .children-table td { padding: 6px 10px; }
     .children-table input { border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; width: 100%; font-size: .9rem; }
+    .children-table input.input-error { border-color: var(--error) !important; box-shadow: 0 0 0 3px rgba(229,57,53,.15) !important; }
 
     /* ── Navigation ── */
     .nav-row {
@@ -436,7 +437,7 @@
         </thead>
         <tbody>
           <tr>
-            <td><input type="text" name="figlio1_nome" placeholder="Nome" /></td>
+            <td><input type="text" name="figlio1_nome" required placeholder="Nome *" /></td>
             <td><input type="text" name="figlio1_eta" placeholder="es. 3 anni" /></td>
           </tr>
           <tr>
