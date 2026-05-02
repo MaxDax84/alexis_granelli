@@ -1022,6 +1022,73 @@
 </div>
 
 <script>
+  // ── DATI DI TEST — rimuovi questo blocco quando non serve più ──────
+  document.addEventListener('DOMContentLoaded', function() { fillTestData(); });
+  function fillTestData() {
+    const set = (name, val) => { const el = document.querySelector(`[name="${name}"]`); if(el) el.value = val; };
+    const radio = (name, val) => { const el = document.querySelector(`input[name="${name}"][value="${val}"]`); if(el){ el.checked = true; el.dispatchEvent(new Event('change')); } };
+    // Genitore 1
+    set('g1_nome','Mario'); set('g1_cognome','Rossi'); set('g1_eta','35');
+    set('g1_professione','Ingegnere'); set('g1_email','mario.rossi@test.it');
+    set('g1_telefono','+39 333 1234567'); set('g1_cf','RSSMRA85A01H501Z');
+    set('g1_regione','Lombardia'); set('g1_indirizzo','Via Roma 1, 20100 Milano');
+    // Figli
+    set('figlio1_nome','Luca'); set('figlio1_eta','8 mesi');
+    // Provenienza
+    set('come_conosciuto','Instagram'); radio('conosceva_sleep','No');
+    // Bambino
+    set('bambino_nome','Luca'); set('bambino_nascita','2025-09-01');
+    // Gravidanza
+    radio('grav_prevista','Sì'); radio('grav_problemi','No');
+    radio('tipo_parto','Spontaneo'); radio('parto_compl','No');
+    set('settimane_nascita','39');
+    // Medico
+    radio('prob_medici','No');
+    // Mamma
+    radio('mamma_dorme','No'); radio('mamma_appetito','No'); radio('mamma_pensieri','No');
+    // Pediatra
+    set('pediatra_nome','Dott. Bianchi'); radio('ped_escluso','Sì'); radio('ped_dormire','Sì');
+    set('bambino_peso','8 kg');
+    // Sviluppo
+    set('ms_rotolare','4 mesi'); set('ms_sedersi','Non ancora');
+    // Alimentazione
+    radio('tipo_latte','Al seno'); radio('allattare_giorno','Di notte');
+    radio('pappe','No'); radio('biberon_tazza','Biberon');
+    // Abitudini
+    radio('pollice','No'); radio('ciuccio','No');
+    radio('oggetto_sic','No'); radio('melatonina','No');
+    // Comportamento sonno
+    radio('russa','No'); radio('bocca','No'); radio('cade','No');
+    radio('muove','Sì'); radio('suda','No');
+    // Reflusso
+    radio('reflusso','No');
+    // Condizioni mediche
+    radio('allergie','No'); radio('otiti','No'); radio('asma','No'); radio('naso','No');
+    // Incubi
+    radio('incubi','No');
+    // Abitudini sonno
+    set('disturbi_durata','Dalla nascita, si sveglia ogni 2 ore di notte.');
+    set('tecniche_provate','Allattamento, cullarsi, passeggino.');
+    // Dove dorme
+    radio('tipo_letto','Culla'); radio('dove_dorme','Stanza dei genitori');
+    set('dove_ideale','Stanza sua nella culla'); radio('condivide','No');
+    // Routine
+    set('routine_sonno','Bagno, allattamento, ninna nanna, culla.');
+    radio('orario_fisso','Sì'); set('orario_val','20:30');
+    // Comportamenti
+    radio('paura_buio','No'); radio('genitori_buio','No');
+    radio('angoscia','No'); radio('testa','No');
+    // Risvegli e temperamento
+    set('schema_risvegli','Si sveglia circa alle 01:00 e alle 04:00.');
+    set('temperamento','Vivace e curioso, molto attaccato alla mamma.');
+    set('tempo_solo','Gioca per pochi minuti poi piange.');
+    set('auto_calma','Solo con l\'allattamento.');
+    // Programma e obiettivi
+    set('programma_24h','07:00 sveglio, allattamento. 09:30 riposino 45 min (allattato). 12:00 pappa. 14:00 riposino 30 min. 17:00 gioco. 19:30 bagno. 20:30 allattamento e culla. Si sveglia 01:00 e 04:00 → allattamento.');
+    set('obiettivo','Vorremmo che Luca si addormentasse da solo nella culla alle 20:30 e dormisse almeno 5 ore consecutive senza risvegli.');
+  }
+  // ── FINE DATI DI TEST ────────────────────────────────────────────
+
   // ── Inserisci qui l'URL del tuo Google Apps Script dopo il deploy ──
   const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw2TlnEx96DqIOF9XXQcH3M1cfTKMzIY84Q8YTl-QVeKL_FPYFkCTpUEAEqHvrze7T5/exec';
 
