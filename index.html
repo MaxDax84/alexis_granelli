@@ -325,7 +325,7 @@
 </div>
 
 <div id="form-container">
-  <form id="client-form" action="https://formspree.io/f/PLACEHOLDER" method="POST">
+  <form id="client-form" method="POST">
 
     <!-- ════════════════════════════════════════
          STEP 1 — Informazioni Genitori
@@ -1022,6 +1022,9 @@
 </div>
 
 <script>
+  // ── Inserisci qui l'URL del tuo Google Apps Script dopo il deploy ──
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/INSERISCI_URL_QUI/exec';
+
   const TOTAL_STEPS = 5;
   let currentStep = 1;
 
@@ -1141,22 +1144,18 @@
     submitBtn.disabled = true;
     submitBtn.textContent = 'Invio in corso…';
     try {
-      const res = await fetch(form.action, {
+      // Google Apps Script non supporta CORS completo: usiamo no-cors.
+      // La richiesta viene inviata correttamente ma la risposta è opaca.
+      await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
-        body: new FormData(form),
-        headers: { 'Accept': 'application/json' }
+        mode: 'no-cors',
+        body: new URLSearchParams(new FormData(form))
       });
-      if (res.ok) {
-        form.style.display = 'none';
-        document.getElementById('success-panel').classList.add('active');
-        document.getElementById('progress-bar').style.width = '100%';
-        document.getElementById('step-indicators').style.display = 'none';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Invia Modulo ✓';
-        alert("Si è verificato un errore durante l'invio. Riprova o contatta Alexis direttamente.");
-      }
+      form.style.display = 'none';
+      document.getElementById('success-panel').classList.add('active');
+      document.getElementById('progress-bar').style.width = '100%';
+      document.getElementById('step-indicators').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch {
       submitBtn.disabled = false;
       submitBtn.textContent = 'Invia Modulo ✓';
