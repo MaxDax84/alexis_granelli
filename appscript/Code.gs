@@ -98,10 +98,10 @@ function doPost(e) {
       new Date(),
       // Genitore 1
       d.g1_nome || '', d.g1_cognome || '', d.g1_eta || '', d.g1_professione || '',
-      d.g1_email || '', d.g1_telefono || '', d.g1_cf || '', d.g1_regione || '', d.g1_indirizzo || '',
+      d.g1_email || '', (d.g1_telefono ? "'" + d.g1_telefono : ''), d.g1_cf || '', d.g1_regione || '', d.g1_indirizzo || '',
       // Genitore 2
       d.g2_nome || '', d.g2_cognome || '', d.g2_eta || '', d.g2_professione || '',
-      d.g2_email || '', d.g2_telefono || '',
+      d.g2_email || '', (d.g2_telefono ? "'" + d.g2_telefono : ''),
       // Casa
       d.altre_persone || '',
       // Figli
