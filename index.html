@@ -1209,31 +1209,34 @@
   }
 
   /* ── Form submit ──────────────────────────────────────────────── */
-  document.getElementById('client-form').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    if (!validateStep(currentStep)) return;
+  // Iframe nascosto: evita i problemi CORS con Google Apps Script.
+  // Il form viene inviato normalmente al browser, la risposta va nell'iframe.
+  const _iframe = document.createElement('iframe');
+  _iframe.name = 'gs_iframe';
+  _iframe.style.display = 'none';
+  document.body.appendChild(_iframe);
+
+  document.getElementById('client-form').addEventListener('submit', function(e) {
+    if (!validateStep(currentStep)) {
+      e.preventDefault();
+      return;
+    }
     const form = e.target;
+    form.action = APPS_SCRIPT_URL;
+    form.target = 'gs_iframe';
+
     const submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Invio in corso…';
-    try {
-      // Google Apps Script non supporta CORS completo: usiamo no-cors.
-      // La richiesta viene inviata correttamente ma la risposta è opaca.
-      await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: new URLSearchParams(new FormData(form))
-      });
+
+    _iframe.onload = function() {
+      _iframe.onload = null;
       form.style.display = 'none';
       document.getElementById('success-panel').classList.add('active');
       document.getElementById('progress-bar').style.width = '100%';
       document.getElementById('step-indicators').style.display = 'none';
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Invia Modulo ✓';
-      alert('Errore di rete. Controlla la connessione e riprova.');
-    }
+    };
   });
 </script>
 </body>
