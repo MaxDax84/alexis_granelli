@@ -153,14 +153,13 @@ function doPost(e) {
       d.programma_24h || '', d.obiettivo || '', d.note || ''
     ];
 
-    sheet.appendRow(row);
-
-    // Forza formato testo sulle celle con telefono, CF e valori numerici ambigui
-    // (evita che il + iniziale venga interpretato come formula da Google Sheets)
-    const lastRow = sheet.getLastRow();
+    // Formatta le colonne problematiche PRIMA di scrivere i valori,
+    // altrimenti Google Sheets interpreta il + come formula nell'istante dell'inserimento
+    const nextRow = sheet.getLastRow() + 1;
     [7, 8, 16, 33, 44].forEach(function(col) {
-      sheet.getRange(lastRow, col).setNumberFormat('@');
+      sheet.getRange(nextRow, col).setNumberFormat('@');
     });
+    sheet.getRange(nextRow, 1, 1, row.length).setValues([row]);
 
     // Notifica email ad Alexis
     MailApp.sendEmail({
