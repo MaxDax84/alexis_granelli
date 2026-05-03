@@ -3,10 +3,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ID del Google Sheet (si trova nell'URL: docs.google.com/spreadsheets/d/QUI/edit)
-const SHEET_ID = 'INSERISCI_ID_FOGLIO_QUI';
+const SHEET_ID = '1r3Ni2nrHdiVMH_66WS3VMTEfVh1dYygcrPYz8sr7Qg4';
 
 // Email a cui inviare la notifica per ogni nuovo modulo ricevuto
-const NOTIFY_EMAIL = 'INSERISCI_EMAIL_ALEXIS_QUI';
+const NOTIFY_EMAIL = 'massimo.dassano@gmail.com';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INTESTAZIONI COLONNE — non modificare
@@ -85,6 +85,11 @@ function doPost(e) {
       sheet.appendRow(HEADERS);
       sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold');
       sheet.setFrozenRows(1);
+      // Forza formato testo sulle colonne con telefono, CF e altri campi numerici
+      // G1 Telefono=col7, G1 CF=col8, G2 Telefono=col16, Settimane=col33, Peso=col44
+      [7, 8, 16, 33, 44].forEach(col => {
+        sheet.getRange(1, col, sheet.getMaxRows(), 1).setNumberFormat('@');
+      });
     }
 
     const d = e.parameter;
@@ -149,6 +154,13 @@ function doPost(e) {
     ];
 
     sheet.appendRow(row);
+
+    // Forza formato testo sulle celle con telefono, CF e valori numerici ambigui
+    // (evita che il + iniziale venga interpretato come formula da Google Sheets)
+    const lastRow = sheet.getLastRow();
+    [7, 8, 16, 33, 44].forEach(function(col) {
+      sheet.getRange(lastRow, col).setNumberFormat('@');
+    });
 
     // Notifica email ad Alexis
     MailApp.sendEmail({
