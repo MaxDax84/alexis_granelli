@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌙 Percorso Nanna · Edoardo</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:       #F0F4FF;
+      --card:     #FFFFFF;
+      --text:     #1E293B;
+      --muted:    #64748B;
+      --border:   #E2E8F0;
+      --blue:     #3B82F6;
+      --violet:   #8B5CF6;
+      --orange:   #F97316;
+      --amber:    #F59E0B;
+      --green:    #10B981;
+      --red:      #EF4444;
+      --indigo:   #5B63F5;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px 16px 40px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    header h1 { font-size: 1.65rem; font-weight: 800; letter-spacing: -0.5px; }
+    header p  { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+
+    /* ── Fase tracker ── */
+    .fase-wrap {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      margin-bottom: 20px;
+    }
+    .fase-wrap h3 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .fase-steps {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .fase-step {
+      flex: 1;
+      text-align: center;
+      position: relative;
+    }
+    .fase-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      z-index: 0;
+    }
+    .fase-step.done:not(:last-child)::after  { background: var(--indigo); }
+    .fase-step.attiva:not(:last-child)::after { background: var(--indigo); }
+    .fase-dot {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700;
+      background: var(--border); color: var(--muted);
+      position: relative; z-index: 1;
+    }
+    .fase-step.done  .fase-dot { background: var(--indigo); color: #fff; }
+    .fase-step.attiva .fase-dot {
+      background: var(--indigo); color: #fff;
+      box-shadow: 0 0 0 4px rgba(91,99,245,0.2);
+    }
+    .fase-label {
+      display: block;
+      font-size: 0.68rem; margin-top: 6px;
+      color: var(--muted); font-weight: 600;
+      line-height: 1.3;
+    }
+    .fase-step.done  .fase-label { color: var(--indigo); }
+    .fase-step.attiva .fase-label { color: var(--indigo); }
+    .fase-dates {
+      display: block;
+      font-size: 0.62rem; color: var(--muted);
+      font-weight: 400; margin-top: 2px;
+    }
+
+    /* ── KPI cards ── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    @media (min-width: 580px) { .kpi-grid { grid-template-columns: repeat(4, 1fr); } }
+    .kpi-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 18px 14px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      text-align: center;
+    }
+    .kpi-value {
+      font-size: 2rem; font-weight: 800; line-height: 1;
+      margin-bottom: 5px;
+    }
+    .kpi-label {
+      font-size: 0.72rem; color: var(--muted); line-height: 1.35;
+    }
+
+    /* ── Sezione label ── */
+    .sezione {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      padding-left: 2px;
+    }
+
+    /* ── Charts grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    @media (min-width: 640px) { .charts-grid { grid-template-columns: repeat(2, 1fr); } }
+    .chart-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .chart-card h3 {
+      font-size: 0.88rem; font-weight: 700; margin-bottom: 2px;
+    }
+    .chart-card .sub {
+      font-size: 0.73rem; color: var(--muted); margin-bottom: 14px;
+    }
+    .chart-card canvas { max-height: 200px; }
+
+    /* ── Highlights ── */
+    .highlights-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    @media (min-width: 640px) { .highlights-grid { grid-template-columns: repeat(3, 1fr); } }
+    .highlight-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      border-left: 4px solid var(--indigo);
+    }
+    .highlight-card .hl-tag {
+      font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--indigo); margin-bottom: 6px;
+    }
+    .highlight-card p { font-size: 0.82rem; line-height: 1.5; }
+    .highlight-card strong { color: var(--text); }
+
+    /* ── Observations ── */
+    .obs-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 20px 22px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .obs-card h2 { font-size: 0.95rem; font-weight: 700; margin-bottom: 14px; }
+    .obs-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .obs-item {
+      display: flex; gap: 10px; align-items: flex-start;
+      font-size: 0.82rem; line-height: 1.55; color: var(--text);
+    }
+    .obs-item .ico { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Timeline giornaliera ── */
+    .tl-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+      margin-bottom: 20px;
+    }
+    .tl-card h2 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+    .tl-card .sub { font-size: 0.73rem; color: var(--muted); margin-bottom: 12px; }
+    .tl-legend {
+      display: flex; flex-wrap: wrap; gap: 8px 16px; margin-bottom: 14px;
+    }
+    .tl-legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.67rem; color: var(--muted); }
+    .tl-swatch { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+    .tl-scroller { overflow-x: auto; }
+    .tl-grid { min-width: 560px; }
+    .tl-axis-row { display: grid; grid-template-columns: 52px 1fr; gap: 6px; margin-bottom: 3px; }
+    .tl-axis { position: relative; height: 16px; }
+    .tl-tick { position: absolute; transform: translateX(-50%); font-size: 0.59rem; color: var(--muted); }
+    .tl-row { display: grid; grid-template-columns: 52px 1fr; gap: 6px; align-items: center; margin-bottom: 4px; }
+    .tl-lbl { font-size: 0.68rem; font-weight: 700; color: var(--muted); text-align: right; }
+    .tl-bar {
+      position: relative; height: 28px; border-radius: 6px; background: #F8FAFC;
+      background-image: repeating-linear-gradient(
+        to right, rgba(226,232,240,0.8) 0, rgba(226,232,240,0.8) 1px,
+        transparent 1px, transparent calc(100% / 15)
+      );
+    }
+    .tl-blk {
+      position: absolute; top: 4px; bottom: 4px;
+      border-radius: 3px; min-width: 4px; cursor: default;
+      overflow: hidden;
+    }
+    .tl-dur {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.52rem; font-weight: 700; line-height: 1;
+      pointer-events: none; white-space: nowrap;
+    }
+    .tl-blk:hover { filter: brightness(0.9); }
+    .tl-dot {
+      position: absolute; top: 50%; transform: translate(-50%, -50%);
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--text); z-index: 4;
+      box-shadow: 0 0 0 2px white;
+    }
+    .tl-tooltip {
+      position: fixed;
+      background: rgba(15,23,42,0.88);
+      color: #fff;
+      padding: 5px 9px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      line-height: 1.4;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 9999;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <h1>🌙 Percorso Nanna · Edoardo</h1>
+  <p>1 maggio – 16 maggio 2026 · Dati estratti dalla chat WhatsApp "Nanna team for Edo"</p>
+</header>
+
+<!-- ── Fase del percorso ── -->
+<div class="fase-wrap">
+  <h3>Progressione del percorso</h3>
+  <div class="fase-steps">
+    <div class="fase-step done">
+      <span class="fase-dot">✓</span>
+      <span class="fase-label">Fase 1<br>Accanto</span>
+      <span class="fase-dates">1–3 mag</span>
+    </div>
+    <div class="fase-step done">
+      <span class="fase-dot">✓</span>
+      <span class="fase-label">Fase 2<br>Solo voce</span>
+      <span class="fase-dates">4–6 mag</span>
+    </div>
+    <div class="fase-step attiva">
+      <span class="fase-dot">3</span>
+      <span class="fase-label">Fase 3<br>Alla porta</span>
+      <span class="fase-dates">7–9 mag</span>
+    </div>
+    <div class="fase-step">
+      <span class="fase-dot">4</span>
+      <span class="fase-label">Fase 4<br>Fuori porta</span>
+      <span class="fase-dates">prossima</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── KPI ── -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-value" style="color:var(--indigo)">1.5</div>
+    <div class="kpi-label">risvegli medi<br>per notte</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-value" style="color:var(--amber)">19'</div>
+    <div class="kpi-label">latenza media<br>serale</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-value" style="color:var(--blue)">10h33</div>
+    <div class="kpi-label">sonno notturno<br>medio</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-value" style="color:var(--green)">2</div>
+    <div class="kpi-label">notti senza<br>risvegli</div>
+  </div>
+</div>
+
+<!-- ── Timeline giornaliera ── -->
+<div class="tl-card">
+  <h2>📅 Calendario giornaliero</h2>
+  <div class="sub">Sveglia, pisolino mattutino, riposino pomeridiano e addormentamento serale — ore 7:00–22:00</div>
+  <div class="tl-legend">
+    <div class="tl-legend-item"><div class="tl-swatch" style="background:#5B63F5"></div>Sonno notturno</div>
+    <div class="tl-legend-item"><div class="tl-swatch" style="background:rgba(16,185,129,0.3)"></div>Addormentamento mattutino</div>
+    <div class="tl-legend-item"><div class="tl-swatch" style="background:#10B981"></div>Pisolino mattutino</div>
+    <div class="tl-legend-item"><div class="tl-swatch" style="background:rgba(249,115,22,0.3)"></div>Addormentamento pomeridiano</div>
+    <div class="tl-legend-item"><div class="tl-swatch" style="background:#F97316"></div>Pisolino pomeridiano</div>
+    <div class="tl-legend-item"><div class="tl-swatch" style="background:rgba(91,99,245,0.35)"></div>Addormentamento serale</div>
+  </div>
+  <div class="tl-scroller">
+    <div class="tl-grid">
+      <div class="tl-axis-row">
+        <div></div>
+        <div class="tl-axis">
+          <span class="tl-tick" style="left:0%">7</span>
+          <span class="tl-tick" style="left:6.67%">8</span>
+          <span class="tl-tick" style="left:13.33%">9</span>
+          <span class="tl-tick" style="left:20%">10</span>
+          <span class="tl-tick" style="left:26.67%">11</span>
+          <span class="tl-tick" style="left:33.33%">12</span>
+          <span class="tl-tick" style="left:40%">13</span>
+          <span class="tl-tick" style="left:46.67%">14</span>
+          <span class="tl-tick" style="left:53.33%">15</span>
+          <span class="tl-tick" style="left:60%">16</span>
+          <span class="tl-tick" style="left:66.67%">17</span>
+          <span class="tl-tick" style="left:73.33%">18</span>
+          <span class="tl-tick" style="left:80%">19</span>
+          <span class="tl-tick" style="left:86.67%">20</span>
+          <span class="tl-tick" style="left:93.33%">21</span>
+          <span class="tl-tick" style="left:100%">22</span>
+        </div>
+      </div>
+      <div id="tlGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Gruppo 1: Sonno notturno ── -->
+<p class="sezione">Sonno notturno</p>
+<div class="charts-grid">
+
+  <div class="chart-card">
+    <h3>Risvegli notturni</h3>
+    <div class="sub">Numero di risvegli per notte</div>
+    <canvas id="chartRisvegli"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>Sonno notturno netto</h3>
+    <div class="sub">Ore di sonno effettivo (esclusi i risvegli) · tratteggio = target 11h</div>
+    <canvas id="chartSonno"></canvas>
+  </div>
+
+  <div class="chart-card" style="grid-column: 1 / -1">
+    <h3>Sveglia mattutina</h3>
+    <div class="sub">Orario di risveglio definitivo ogni mattina · 9/5: prima sveglia 6:50, riaddormentato in autonomia fino alle 8:10</div>
+    <canvas id="chartSveglia"></canvas>
+  </div>
+
+</div>
+
+<!-- ── Gruppo 2: Ritmo diurno ── -->
+<p class="sezione">Ritmo diurno</p>
+<div class="charts-grid">
+
+  <div class="chart-card">
+    <h3>Durata riposini</h3>
+    <div class="sub">Minuti di sonno del pisolino mattutino e pomeridiano</div>
+    <canvas id="chartRiposini"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>Finestre di veglia</h3>
+    <div class="sub">○ = stima</div>
+    <canvas id="chartFdV"></canvas>
+  </div>
+
+</div>
+
+<!-- ── Gruppo 3: Latenze di addormentamento ── -->
+<p class="sezione">Latenza di addormentamento</p>
+<div class="charts-grid">
+
+  <div class="chart-card">
+    <h3>Serale</h3>
+    <div class="sub">Tempo impiegato per addormentarsi</div>
+    <canvas id="chartLatenza"></canvas>
+  </div>
+
+  <div class="chart-card">
+    <h3>Riposino pomeridiano</h3>
+    <div class="sub">Tempo impiegato per addormentarsi</div>
+    <canvas id="chartLatenzaPome"></canvas>
+  </div>
+
+</div>
+
+<!-- ── Highlights ── -->
+<div class="highlights-grid">
+  <div class="highlight-card">
+    <div class="hl-tag">⭐ Record autonomia</div>
+    <p><strong>5 minuti</strong> per addormentarsi il 6 maggio, senza alcun contatto fisico. Segnale forte di autonomia, ma anche di stanchezza eccessiva: l'ideale è mantenersi tra 15' e 30'.</p>
+  </div>
+  <div class="highlight-card">
+    <div class="hl-tag">🎉 Prima notte pulita</div>
+    <p>La notte del <strong>4 maggio</strong> (notte 4) Edoardo ha dormito senza nessun risveglio: <strong>11h37</strong> consecutive.</p>
+  </div>
+  <div class="highlight-card">
+    <div class="hl-tag">🤝 Autonomia</div>
+    <p>La notte dell'8 maggio, Edoardo si è svegliato alle 06:50 e si è <strong>riaddormentato da solo</strong> alle 07:20, senza alcun intervento.</p>
+  </div>
+</div>
+
+<!-- ── Observations ── -->
+<div class="obs-card">
+  <h2>📊 Osservazioni e trend</h2>
+  <ul class="obs-list">
+    <li class="obs-item">
+      <span class="ico">📉</span>
+      <span>La latenza serale è scesa da 50' (N1, troppo lenta) fino a valori di 14'–17' nelle ultime 3 notti, molto vicini alla zona ideale 15'–30'. La N1 e N5 erano troppo lente; N3, N4, N6 e N8 troppo veloci — segno di eccessiva stanchezza all'orario di messa a letto.</span>
+    </li>
+    <li class="obs-item">
+      <span class="ico">⚠️</span>
+      <span>Una latenza <strong>inferiore a 15 minuti</strong> non è positiva: indica che Edoardo era già eccessivamente stanco al momento dell'addormentamento. L'obiettivo è mantenersi nella zona ideale <strong>15'–30'</strong>.</span>
+    </li>
+    <li class="obs-item">
+      <span class="ico">🔍</span>
+      <span>Le notti con 3 risvegli (1/5, 3/5, 5/5) coincidono con situazioni particolari: prima notte del percorso, cambio pannolino urgente, e addormentamento con il papà per la prima volta.</span>
+    </li>
+    <li class="obs-item">
+      <span class="ico">⏰</span>
+      <span>La <strong>finestra di veglia serale</strong> è quasi sempre sopra i 3h30 (fuori dalla zona ideale), con picchi di <strong>4h24 il 4 maggio</strong> ("siamo andati lunghissimi") e <strong>4h38 l'8 maggio</strong>. Questo spiega le latenze serali spesso sotto i 15': Edoardo arriva a letto già eccessivamente stanco.</span>
+    </li>
+    <li class="obs-item">
+      <span class="ico">🔄</span>
+      <span>La <strong>finestra pomeridiana</strong> (tra pisolino mattutino e riposino pomeridiano) è più vicina al target: oscilla tra 2h24 e 3h36. Il 7 maggio è stata la più corta (2h24) dopo un pisolino mattutino brevissimo.</span>
+    </li>
+    <li class="obs-item">
+      <span class="ico">📈</span>
+      <span>Il riposino pomeridiano nelle prime notti ha toccato i <strong>150 min</strong> (2h30), poi si è stabilizzato tra 50 e 90 min. Il 7 maggio è stata la giornata più difficile (solo 35 min). La latenza pomeridiana è migliorata sensibilmente dal 6 maggio (20 min, zona ideale) ma rimane alta nelle giornate con finestra di veglia mal calibrata.</span>
+    </li>
+    <li class="obs-item">
+      <span class="ico">🍼</span>
+      <span>Il biberon notturno è in progressiva riduzione: da <strong>180ml</strong> nelle prime notti a <strong>120ml</strong>, con l'obiettivo di eliminarlo completamente.</span>
+    </li>
+    <li class="obs-item">
+      <span class="ico">💪</span>
+      <span>Trend generale <strong>positivo e costante</strong>: ogni fase del percorso ha portato un miglioramento nella qualità del sonno, sia serale che notturna.</span>
+    </li>
+  </ul>
+</div>
+
+<footer>
+  Dati estratti dalla chat WhatsApp "Nanna team for Edo" · Aggiornato al 9 maggio 2026 · Percorso sleep coaching Dolcevia Parenting
+</footer>
+
+<script>
+  Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  Chart.defaults.font.size = 11;
+  Chart.defaults.color = '#64748B';
+
+  const notti   = ['N1\n1/5','N2\n2/5','N3\n3/5','N4\n4/5','N5\n5/5','N6\n6/5','N7\n7/5','N8\n8/5'];
+  const nottiLbl = ['1 mag','2 mag','3 mag','4 mag','5 mag','6 mag','7 mag','8 mag','9 mag','10 mag','11 mag','12 mag','13 mag','14 mag','15 mag'];
+
+  const risvegli    = [3, 1, 3, 0, 3, 1, 0, 1,  1,  2,  2,  2,  1,  1,  3];
+  const latenza     = [50, 19, 10, 7, 30, 5, 17, 14, 10, 15, 10, 25, 35, 10, 6];
+  const sonnoNetto  = [8.7, 10.4, 10.6, 11.6, 9.6, 11.0, 11.0, 11.5, 10.2, 10.0, 10.4, 10.5, 10.3, 10.5, 11.3];
+
+  const riposiniLbl = ['2 mag','3 mag','4 mag','5 mag','6 mag','7 mag','8 mag','9 mag','10 mag','11 mag','12 mag','13 mag','14 mag','15 mag','16 mag'];
+  const mattutino   = [43, 52, 37, 35, null, 22, 33, 30,  30, 45, 20, 45,  60, 45, 60];
+  const pomeridiano = [150, 91, 70, 90,  80, 35, 48, 50, 108, null, 150, 110, 130, null, 30];
+
+  const colorRisvegli = risvegli.map(v =>
+    v === 0 ? '#10B981' : v === 1 ? '#F59E0B' : '#EF4444'
+  );
+
+  const gridColor = '#F1F5F9';
+  const opts = {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { display: false } },
+  };
+
+  /* ── Risvegli ── */
+  new Chart(document.getElementById('chartRisvegli'), {
+    type: 'bar',
+    data: {
+      labels: nottiLbl,
+      datasets: [
+        // Dataset vuoti usati solo per la legenda
+        { label: '0 risvegli',  data: [], backgroundColor: '#10B981', borderRadius: 7 },
+        { label: '1 risveglio', data: [], backgroundColor: '#F59E0B', borderRadius: 7 },
+        { label: '2–3 risvegli', data: [], backgroundColor: '#EF4444', borderRadius: 7 },
+        // Dataset reale (nascosto dalla legenda: nessun label)
+        { data: risvegli, backgroundColor: colorRisvegli, borderRadius: 7, borderSkipped: false }
+      ]
+    },
+    options: {
+      ...opts,
+      plugins: {
+        legend: {
+          display: true, position: 'top',
+          labels: {
+            boxWidth: 10, padding: 10, font: { size: 10 },
+            filter: item => !!item.text
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, max: 4, ticks: { stepSize: 1 }, grid: { color: gridColor } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  /* ── Latenza serale ── */
+  function latenzaColor(v) {
+    if (v < 15) return '#EF4444';   // troppo veloce = stanco
+    if (v <= 30) return '#10B981';  // zona ideale
+    return '#F59E0B';               // troppo lento
+  }
+  new Chart(document.getElementById('chartLatenza'), {
+    type: 'line',
+    data: {
+      labels: nottiLbl,
+      datasets: [
+        {
+          // Bordo inferiore zona ideale (15 min)
+          data: Array(8).fill(15),
+          borderColor: 'rgba(16,185,129,0.35)',
+          borderWidth: 1, borderDash: [4,4],
+          pointRadius: 0, fill: false, order: 3,
+        },
+        {
+          // Bordo superiore zona ideale (30 min) — riempie fino al dataset precedente
+          data: Array(8).fill(30),
+          borderColor: 'rgba(16,185,129,0.35)',
+          borderWidth: 1, borderDash: [4,4],
+          pointRadius: 0,
+          fill: { target: 0 },
+          backgroundColor: 'rgba(16,185,129,0.1)',
+          order: 3,
+        },
+        // Dataset vuoti per la legenda
+        { label: "< 15' stanchezza eccessiva", data: [], borderColor: '#EF4444', pointBackgroundColor: '#EF4444', pointRadius: 5 },
+        { label: "15'–30' zona ideale",         data: [], borderColor: '#10B981', pointBackgroundColor: '#10B981', pointRadius: 5 },
+        { label: "> 30' messa a letto tardiva", data: [], borderColor: '#F59E0B', pointBackgroundColor: '#F59E0B', pointRadius: 5 },
+        {
+          // Dati reali (nascosto dalla legenda: nessun label)
+          data: latenza,
+          borderColor: '#94A3B8',
+          tension: 0.4, fill: false,
+          pointBackgroundColor: latenza.map(latenzaColor),
+          pointBorderColor: latenza.map(latenzaColor),
+          pointRadius: 6, pointHoverRadius: 8,
+          order: 1,
+        }
+      ]
+    },
+    options: {
+      ...opts,
+      plugins: {
+        legend: {
+          display: true, position: 'top',
+          labels: {
+            boxWidth: 10, padding: 8, font: { size: 10 },
+            filter: item => !!item.text
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true, max: 60,
+          ticks: { callback: v => v + "'" },
+          grid: { color: gridColor }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  /* ── Sonno notturno ── */
+  new Chart(document.getElementById('chartSonno'), {
+    type: 'line',
+    data: {
+      labels: nottiLbl,
+      datasets: [
+        {
+          label: 'Sonno netto',
+          data: sonnoNetto,
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59,130,246,0.08)',
+          tension: 0.4,
+          fill: true,
+          pointBackgroundColor: sonnoNetto.map(v => v === Math.max(...sonnoNetto) ? '#10B981' : '#3B82F6'),
+          pointRadius: 5,
+          pointHoverRadius: 7,
+        },
+        {
+          label: 'Target 11h',
+          data: Array(8).fill(11),
+          borderColor: '#10B981',
+          borderDash: [6, 4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      ...opts,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: { boxWidth: 12, padding: 10, font: { size: 10 } }
+        }
+      },
+      scales: {
+        y: {
+          min: 7, max: 13,
+          ticks: { callback: v => v + 'h' },
+          grid: { color: gridColor }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  /* ── Sveglia mattutina ── */
+  // Orario in ore decimali, per mattina (2 mag → 9 mag)
+  // 8/5: stimato 7:39 (da "2.30 di finestra" + nanna 10:09 dichiarati da Eleonora)
+  // 14/5: sveglia stimata a 7:15 (cerchio aperto) — nessun dato esplicito
+  const svegliaMattina = [8, 7+50/60, 7+40/60, 7+23/60, 7+15/60, 7+10/60, 7+39/60, 8+10/60,
+                           7+30/60, 7+20/60, 7+30/60, 7+25/60, 7+15/60, 6+55/60, 6+50/60];
+
+  new Chart(document.getElementById('chartSveglia'), {
+    type: 'line',
+    data: {
+      labels: riposiniLbl,
+      datasets: [{
+        label: 'Sveglia',
+        data: svegliaMattina,
+        borderColor: '#3B82F6',
+        borderWidth: 2,
+        backgroundColor: 'rgba(59,130,246,0.07)',
+        tension: 0.3, fill: true,
+        pointBackgroundColor: svegliaMattina.map((_, i) => i === 12 ? 'white'      : '#3B82F6'),
+        pointBorderColor:     svegliaMattina.map((_, i) => i === 12 ? '#3B82F6'    : 'transparent'),
+        pointBorderWidth:     svegliaMattina.map((_, i) => i === 12 ? 2            : 0),
+        pointRadius:          svegliaMattina.map((_, i) => i === 12 ? 6            : 5),
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      ...opts,
+      scales: {
+        y: {
+          min: 6.5, max: 8.5,
+          ticks: {
+            callback: v => {
+              const h = Math.floor(v);
+              const m = Math.round((v - h) * 60);
+              return h + ':' + (m < 10 ? '0' + m : m);
+            },
+            stepSize: 0.5
+          },
+          grid: { color: gridColor }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  /* ── Latenza riposino pomeridiano ── */
+  const latenzaPome = [51, 59, 35, 30, 20, 70, 30, 50, 24, null, 15, 15, 5, null, 5];
+  new Chart(document.getElementById('chartLatenzaPome'), {
+    type: 'line',
+    data: {
+      labels: riposiniLbl,
+      datasets: [
+        {
+          data: Array(8).fill(15),
+          borderColor: 'rgba(16,185,129,0.35)',
+          borderWidth: 1, borderDash: [4,4],
+          pointRadius: 0, fill: false, order: 3,
+        },
+        {
+          data: Array(8).fill(30),
+          borderColor: 'rgba(16,185,129,0.35)',
+          borderWidth: 1, borderDash: [4,4],
+          pointRadius: 0,
+          fill: { target: 0 },
+          backgroundColor: 'rgba(16,185,129,0.1)',
+          order: 3,
+        },
+        { label: "< 15' stanchezza eccessiva", data: [], borderColor: '#EF4444', pointBackgroundColor: '#EF4444', pointRadius: 5 },
+        { label: "15'–30' zona ideale",         data: [], borderColor: '#10B981', pointBackgroundColor: '#10B981', pointRadius: 5 },
+        { label: "> 30' messa a letto tardiva", data: [], borderColor: '#F59E0B', pointBackgroundColor: '#F59E0B', pointRadius: 5 },
+        {
+          data: latenzaPome,
+          borderColor: '#94A3B8',
+          tension: 0.4, fill: false,
+          pointBackgroundColor: latenzaPome.map(latenzaColor),
+          pointBorderColor: latenzaPome.map(latenzaColor),
+          pointRadius: 6, pointHoverRadius: 8,
+          order: 1,
+        }
+      ]
+    },
+    options: {
+      ...opts,
+      plugins: {
+        legend: {
+          display: true, position: 'top',
+          labels: {
+            boxWidth: 10, padding: 8, font: { size: 10 },
+            filter: item => !!item.text
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true, max: 80,
+          ticks: { callback: v => v + "'" },
+          grid: { color: gridColor }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  /* ── Finestre di veglia ── */
+  // FdV mattutina:   da sveglia mattutina → inizio pisolino mattutino
+  // FdV pomeridiana: da fine pisolino mattutino → inizio riposino pomeridiano
+  // FdV serale:      da fine riposino pomeridiano → inizio addormentamento serale
+  // 14/5 mattutina stimata (sveglia stimata) — cerchio aperto a indice 12
+  // 11/5 e 15/5: nessun riposino pomeridiano → null su fdvPome e fdvSerale
+  const fdvMattutina = [1.92, 2.80, 2.80, 3.37, 2.92, 4.55, 2.50, 2.83, 3.08, 3.67, 3.83, 3.08, 2.42, 4.08, 3.83];
+  const fdvPome      = [3.0,  2.8,  2.4,  3.1,  3.25, 2.4,  3.6,  3.5,  2.42, null, 1.0,  2.17, 3.17, null, 5.33];
+  const fdvSerale    = [3.8,  3.6,  4.4,  3.7,  3.8,  3.8,  4.6,  4.0,  4.3,  null, 4.5,  4.58, 3.92, null, 2.5];
+
+  new Chart(document.getElementById('chartFdV'), {
+    type: 'line',
+    data: {
+      labels: riposiniLbl,
+      datasets: [
+        {
+          // Bordo inferiore zona ideale (3h)
+          data: Array(15).fill(3),
+          borderColor: 'rgba(16,185,129,0.35)',
+          borderWidth: 1, borderDash: [4,4],
+          pointRadius: 0, fill: false, order: 3,
+        },
+        {
+          // Bordo superiore zona ideale (3.5h) — riempie fino al dataset precedente
+          data: Array(15).fill(3.5),
+          borderColor: 'rgba(16,185,129,0.35)',
+          borderWidth: 1, borderDash: [4,4],
+          pointRadius: 0,
+          fill: { target: 0 },
+          backgroundColor: 'rgba(16,185,129,0.1)',
+          order: 3,
+        },
+        {
+          label: 'Mattutina',
+          data: fdvMattutina,
+          borderColor: '#3B82F6',
+          borderWidth: 2,
+          tension: 0.4, fill: false,
+          pointBackgroundColor: fdvMattutina.map((_, i) => i === 12 ? 'white'   : '#3B82F6'),
+          pointBorderColor:    fdvMattutina.map((_, i) => i === 12 ? '#3B82F6'  : 'transparent'),
+          pointBorderWidth:    fdvMattutina.map((_, i) => i === 12 ? 2          : 0),
+          pointRadius:         fdvMattutina.map((_, i) => i === 12 ? 6          : 5),
+          pointHoverRadius: 7, order: 1,
+        },
+        {
+          label: 'Pomeridiana',
+          data: fdvPome,
+          borderColor: '#8B5CF6',
+          tension: 0.4, fill: false, spanGaps: false,
+          pointBackgroundColor: fdvPome.map((_, i) => i === 4 ? 'white'        : '#8B5CF6'),
+          pointBorderColor:    fdvPome.map((_, i) => i === 4 ? '#8B5CF6'       : 'transparent'),
+          pointBorderWidth:    fdvPome.map((_, i) => i === 4 ? 2               : 0),
+          pointRadius:         fdvPome.map((v, i) => v === null ? 0 : (i === 4 ? 6 : 5)),
+          pointHoverRadius: 7, order: 1,
+        },
+        {
+          label: 'Serale',
+          data: fdvSerale,
+          borderColor: '#F97316',
+          tension: 0.4, fill: false, spanGaps: false,
+          pointBackgroundColor: '#F97316',
+          pointRadius: fdvSerale.map(v => v === null ? 0 : 5),
+          pointHoverRadius: 7, order: 1,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: true, position: 'top',
+          labels: { boxWidth: 10, padding: 10, font: { size: 10 },
+            filter: item => !!item.text }
+        }
+      },
+      scales: {
+        y: {
+          min: 1.5, max: 6.0,
+          ticks: { callback: v => v + 'h', stepSize: 0.5 },
+          grid: { color: gridColor }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  /* ── Riposini diurni ── */
+  new Chart(document.getElementById('chartRiposini'), {
+    type: 'bar',
+    data: {
+      labels: riposiniLbl,
+      datasets: [
+        {
+          label: 'Mattutino',
+          data: mattutino,
+          backgroundColor: 'rgba(139,92,246,0.85)',
+          borderRadius: 5,
+          borderSkipped: false,
+        },
+        {
+          label: 'Pomeridiano',
+          data: pomeridiano,
+          backgroundColor: 'rgba(249,115,22,0.85)',
+          borderRadius: 5,
+          borderSkipped: false,
+        }
+      ]
+    },
+    options: {
+      ...opts,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          labels: { boxWidth: 10, padding: 10, font: { size: 10 } }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { callback: v => v + "'" },
+          grid: { color: gridColor }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  /* ── Timeline giornaliera ── */
+  (function () {
+    const START = 7 * 60; // 7:00 in minuti assoluti
+    const SPAN  = 15 * 60; // 15 ore = 900 min
+
+    function pct(h, m)               { return ((h * 60 + m) - START) / SPAN * 100; }
+    function wid(sh, sm, eh, em)     { return ((eh * 60 + em) - (sh * 60 + sm)) / SPAN * 100; }
+    function hhmm(h, m)              { return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); }
+
+    const COLOR = {
+      am:  '#10B981',
+      aml: 'rgba(16,185,129,0.30)',
+      pm:  '#F97316',
+      pml: 'rgba(249,115,22,0.30)',
+      n:   '#5B63F5',
+      nl:  'rgba(91,99,245,0.35)',
+    };
+
+    // b = { t: tipo, sh, sm, eh, em, tip } — wh/wm null = nessun dato mattutino
+    const days = [
+      { lbl:'1 mag', wh:null, wm:null, blocks:[
+        { t:'nl', sh:20, sm:10, eh:21, em:0,  tip:'Routine serale (lat. 50 min)' },
+        { t:'n',  sh:21, sm:0,  eh:22, em:0,  tip:'Nanna 21:00' },
+      ]},
+      { lbl:'2 mag', wh:8,  wm:0,  blocks:[
+        { t:'am',  sh:9,  sm:55, eh:10, em:38, tip:'Pisolino mattutino 9:55–10:38 (43 min)' },
+        { t:'pml', sh:13, sm:40, eh:14, em:31, tip:'Routine pomeridiana (lat. 51 min)' },
+        { t:'pm',  sh:14, sm:31, eh:17, em:0,  tip:'Riposino pomeridiano 14:31–17:00 (149 min)' },
+        { t:'nl',  sh:20, sm:50, eh:21, em:9,  tip:'Routine serale (lat. 19 min)' },
+        { t:'n',   sh:21, sm:9,  eh:22, em:0,  tip:'Nanna 21:09' },
+      ]},
+      { lbl:'3 mag', wh:7,  wm:50, blocks:[
+        { t:'am',  sh:10, sm:38, eh:11, em:30, tip:'Pisolino mattutino 10:38–11:30 (52 min)' },
+        { t:'pml', sh:14, sm:15, eh:15, em:14, tip:'Routine pomeridiana (lat. 59 min)' },
+        { t:'pm',  sh:15, sm:14, eh:16, em:45, tip:'Riposino pomeridiano 15:14–16:45 (91 min)' },
+        { t:'nl',  sh:20, sm:18, eh:20, em:28, tip:'Routine serale (lat. 10 min)' },
+        { t:'n',   sh:20, sm:28, eh:22, em:0,  tip:'Nanna 20:28' },
+      ]},
+      { lbl:'4 mag', wh:7,  wm:40, blocks:[
+        { t:'am',  sh:10, sm:28, eh:11, em:5,  tip:'Pisolino mattutino 10:28–11:05 (37 min)' },
+        { t:'pml', sh:13, sm:30, eh:14, em:5,  tip:'Routine pomeridiana (lat. 35 min)' },
+        { t:'pm',  sh:14, sm:5,  eh:15, em:15, tip:'Riposino pomeridiano 14:05–15:15 (70 min)' },
+        { t:'nl',  sh:19, sm:39, eh:19, em:46, tip:'Routine serale (lat. 7 min)' },
+        { t:'n',   sh:19, sm:46, eh:22, em:0,  tip:'Nanna 19:46' },
+      ]},
+      { lbl:'5 mag', wh:7,  wm:23, blocks:[
+        { t:'aml', sh:10, sm:45, eh:11, em:20, tip:'Routine pisolino (lat. 35 min)' },
+        { t:'am',  sh:11, sm:20, eh:11, em:55, tip:'Pisolino mattutino 11:20–11:55 (35 min)' },
+        { t:'pml', sh:15, sm:0,  eh:15, em:30, tip:'Routine pomeridiana (lat. 30 min)' },
+        { t:'pm',  sh:15, sm:30, eh:17, em:0,  tip:'Riposino pomeridiano 15:30–17:00 (90 min)' },
+        { t:'nl',  sh:20, sm:40, eh:21, em:10, tip:'Routine serale (lat. 30 min)' },
+        { t:'n',   sh:21, sm:10, eh:22, em:0,  tip:'Nanna 21:10' },
+      ]},
+      { lbl:'6 mag', wh:7,  wm:15, blocks:[
+        { t:'aml', sh:10, sm:10, eh:10, em:40, tip:'Routine pisolino (lat. 30 min)' },
+        { t:'am',  sh:10, sm:40, eh:11, em:5,  tip:'Pisolino mattutino 10:40–~11:05 (25 min, fine stimata)' },
+        { t:'pml', sh:14, sm:30, eh:14, em:50, tip:'Routine pomeridiana (lat. 20 min)' },
+        { t:'pm',  sh:14, sm:50, eh:16, em:10, tip:'Riposino pomeridiano 14:50–16:10 (80 min)' },
+        { t:'nl',  sh:20, sm:0,  eh:20, em:5,  tip:'Routine serale (lat. 5 min)' },
+        { t:'n',   sh:20, sm:5,  eh:22, em:0,  tip:'Nanna 20:05' },
+      ]},
+      { lbl:'7 mag', wh:7,  wm:10, blocks:[
+        { t:'am',  sh:11, sm:43, eh:12, em:5,  tip:'Pisolino mattutino 11:43–12:05 (22 min, spontaneo — nessun pisolino la mattina)' },
+        { t:'pml', sh:14, sm:30, eh:15, em:40, tip:'Routine pomeridiana (lat. 70 min)' },
+        { t:'pm',  sh:15, sm:40, eh:16, em:15, tip:'Riposino pomeridiano 15:40–16:15 (35 min)' },
+        { t:'nl',  sh:20, sm:5,  eh:20, em:22, tip:'Routine serale (lat. 17 min)' },
+        { t:'n',   sh:20, sm:22, eh:22, em:0,  tip:'Nanna 20:22' },
+      ]},
+      { lbl:'8 mag', wh:7,  wm:39, blocks:[
+        { t:'am',  sh:10, sm:9,  eh:10, em:42, tip:'Pisolino mattutino 10:09–10:42 (33 min, passeggino)' },
+        { t:'pml', sh:14, sm:20, eh:14, em:50, tip:'Routine pomeridiana (lat. 30 min)' },
+        { t:'pm',  sh:14, sm:50, eh:15, em:38, tip:'Riposino pomeridiano 14:50–15:38 (48 min)' },
+        { t:'nl',  sh:20, sm:16, eh:20, em:30, tip:'Routine serale (lat. 14 min)' },
+        { t:'n',   sh:20, sm:30, eh:22, em:0,  tip:'Nanna 20:30' },
+      ]},
+      { lbl:'9 mag', wh:8,  wm:10, blocks:[
+        { t:'am',  sh:11, sm:0,  eh:11, em:30, tip:'Pisolino mattutino 11:00–11:30 (30 min, post piscina)' },
+        { t:'pml', sh:15, sm:0,  eh:15, em:50, tip:'Routine pomeridiana (lat. 50 min)' },
+        { t:'pm',  sh:15, sm:50, eh:16, em:40, tip:'Riposino pomeridiano 15:50–16:40 (50 min)' },
+        { t:'nl',  sh:20, sm:40, eh:20, em:50, tip:'Routine serale (lat. 10 min)' },
+        { t:'n',   sh:20, sm:50, eh:22, em:0,  tip:'Nanna 20:50' },
+      ]},
+      { lbl:'10 mag', wh:7, wm:30, blocks:[
+        { t:'aml', sh:10, sm:35, eh:11, em:5,  tip:'Routine pisolino (lat. 30 min)' },
+        { t:'am',  sh:11, sm:5,  eh:11, em:35, tip:'Pisolino mattutino 11:05–11:35 (30 min)' },
+        { t:'pml', sh:14, sm:0,  eh:14, em:24, tip:'Routine pomeridiana (lat. 24 min)' },
+        { t:'pm',  sh:14, sm:24, eh:16, em:12, tip:'Riposino pomeridiano 14:24–16:12 (108 min)' },
+        { t:'nl',  sh:20, sm:30, eh:20, em:45, tip:'Routine serale (lat. 15 min)' },
+        { t:'n',   sh:20, sm:45, eh:22, em:0,  tip:'Nanna 20:45' },
+      ]},
+      { lbl:'11 mag', wh:7, wm:20, blocks:[
+        { t:'am',  sh:11, sm:15, eh:12, em:0,  tip:'Pisolino mattutino 11:15–12:00 (45 min)' },
+        { t:'nl',  sh:20, sm:40, eh:20, em:50, tip:'Routine serale (lat. 10 min)' },
+        { t:'n',   sh:20, sm:50, eh:22, em:0,  tip:'Nanna 20:50 (nessun riposino pomeridiano)' },
+      ]},
+      { lbl:'12 mag', wh:7, wm:30, blocks:[
+        { t:'am',  sh:11, sm:40, eh:12, em:0,  tip:'Pisolino mattutino 11:40–12:00 (20 min, svegliato)' },
+        { t:'pml', sh:13, sm:0,  eh:13, em:15, tip:'Routine pomeridiana (lat. ~15 min, stima)' },
+        { t:'pm',  sh:13, sm:15, eh:15, em:45, tip:'Riposino pomeridiano 13:15–15:45 (~150 min, recupero post-vaccino)' },
+        { t:'nl',  sh:20, sm:15, eh:20, em:40, tip:'Routine serale (lat. 25 min)' },
+        { t:'n',   sh:20, sm:40, eh:22, em:0,  tip:'Nanna 20:40' },
+      ]},
+      { lbl:'13 mag', wh:7, wm:25, blocks:[
+        { t:'am',  sh:10, sm:30, eh:11, em:15, tip:'Pisolino mattutino 10:30–11:15 (45 min, passeggino)' },
+        { t:'pml', sh:13, sm:25, eh:13, em:40, tip:'Routine pomeridiana (lat. 15 min)' },
+        { t:'pm',  sh:13, sm:40, eh:15, em:30, tip:'Riposino pomeridiano 13:40–15:30 (110 min)' },
+        { t:'nl',  sh:20, sm:5,  eh:20, em:40, tip:'Routine serale (lat. 35 min)' },
+        { t:'n',   sh:20, sm:40, eh:22, em:0,  tip:'Nanna 20:40' },
+      ]},
+      { lbl:'14 mag', wh:7, wm:15, blocks:[
+        { t:'aml', sh:9,  sm:40, eh:9,  em:50, tip:'Routine pisolino (lat. 10 min)' },
+        { t:'am',  sh:9,  sm:50, eh:10, em:50, tip:'Pisolino mattutino 9:50–10:50 (60 min)' },
+        { t:'pml', sh:14, sm:0,  eh:14, em:5,  tip:'Routine pomeridiana (lat. 5 min)' },
+        { t:'pm',  sh:14, sm:5,  eh:16, em:15, tip:'Riposino pomeridiano 14:05–16:15 (130 min)' },
+        { t:'nl',  sh:20, sm:10, eh:20, em:20, tip:'Routine serale (lat. 10 min)' },
+        { t:'n',   sh:20, sm:20, eh:22, em:0,  tip:'Nanna 20:20' },
+      ]},
+      { lbl:'15 mag', wh:6, wm:55, blocks:[
+        { t:'am',  sh:11, sm:0,  eh:11, em:45, tip:'Pisolino mattutino 11:00–11:45 (45 min)' },
+        { t:'nl',  sh:19, sm:8,  eh:19, em:14, tip:'Routine serale (lat. 6 min)' },
+        { t:'n',   sh:19, sm:14, eh:22, em:0,  tip:'Nanna 19:14 (nessun riposino pomeridiano)' },
+      ]},
+      { lbl:'16 mag', wh:6, wm:50, blocks:[
+        { t:'am',  sh:10, sm:40, eh:11, em:40, tip:'Pisolino mattutino 10:40–11:40 (60 min, in macchina)' },
+        { t:'pm',  sh:17, sm:0,  eh:17, em:30, tip:'Pisolino in auto 17:00–17:30 (30 min)' },
+        { t:'nl',  sh:20, sm:0,  eh:20, em:45, tip:'Routine serale (lat. 45 min)' },
+        { t:'n',   sh:20, sm:45, eh:22, em:0,  tip:'Nanna 20:45' },
+      ]},
+    ];
+
+    const LABEL_CLR = { am:'white', aml:'#065F46', pm:'white', pml:'#9A3412', n:'white', nl:'#312E81' };
+    function addDurLabel(el, durMin, type) {
+      if (durMin < 30) return;
+      const span = document.createElement('span');
+      span.className = 'tl-dur';
+      span.style.color = LABEL_CLR[type] || 'white';
+      span.textContent = (durMin / 60).toFixed(1) + 'h';
+      el.appendChild(span);
+    }
+
+    // Custom tooltip
+    const tlTip = document.createElement('div');
+    tlTip.className = 'tl-tooltip';
+    document.body.appendChild(tlTip);
+    function showTip(e, text) { tlTip.textContent = text; tlTip.style.display = 'block'; moveTip(e); }
+    function moveTip(e) { tlTip.style.left = (e.clientX + 14) + 'px'; tlTip.style.top = (e.clientY - 10) + 'px'; }
+    function hideTip() { tlTip.style.display = 'none'; }
+
+    const grid = document.getElementById('tlGrid');
+    days.forEach(function(day, i) {
+      const row = document.createElement('div');
+      row.className = 'tl-row';
+
+      const lbl = document.createElement('div');
+      lbl.className = 'tl-lbl';
+      lbl.textContent = day.lbl;
+
+      const bar = document.createElement('div');
+      bar.className = 'tl-bar';
+
+      // Barra sonno notturno (7:00 → sveglia) — solo se abbiamo dati mattutini
+      if (day.wh !== null) {
+        const wakeBlk = document.createElement('div');
+        wakeBlk.className = 'tl-blk';
+        wakeBlk.style.left       = '0%';
+        wakeBlk.style.width      = Math.max(pct(day.wh, day.wm), 0.5) + '%';
+        wakeBlk.style.background = COLOR['n'];
+        const wakeTip = 'Sonno notturno · sveglia: ' + hhmm(day.wh, day.wm);
+        wakeBlk.addEventListener('mouseover', function(e) { showTip(e, wakeTip); });
+        wakeBlk.addEventListener('mousemove', moveTip);
+        wakeBlk.addEventListener('mouseout',  hideTip);
+        bar.appendChild(wakeBlk);
+      }
+
+      // Event blocks
+      day.blocks.forEach(function(b) {
+        const blk = document.createElement('div');
+        blk.className = 'tl-blk';
+        blk.style.left       = pct(b.sh, b.sm) + '%';
+        blk.style.width      = Math.max(wid(b.sh, b.sm, b.eh, b.em), 0.5) + '%';
+        blk.style.background = COLOR[b.t];
+        blk.addEventListener('mouseover', function(e) { showTip(e, b.tip); });
+        blk.addEventListener('mousemove', moveTip);
+        blk.addEventListener('mouseout',  hideTip);
+        if (b.t === 'n') {
+          const span = document.createElement('span');
+          span.className = 'tl-dur';
+          span.style.color = 'white';
+          span.style.justifyContent = 'flex-end';
+          span.style.paddingRight = '5px';
+          if (i < days.length - 1 && days[i + 1].wh !== null) {
+            const totMin = (24 * 60 - (b.sh * 60 + b.sm)) + days[i + 1].wh * 60 + days[i + 1].wm;
+            span.textContent = (totMin / 60).toFixed(1) + 'h';
+          } else {
+            const visMin = (b.eh * 60 + b.em) - (b.sh * 60 + b.sm);
+            if (visMin >= 30) span.textContent = (visMin / 60).toFixed(1) + 'h';
+          }
+          if (span.textContent) blk.appendChild(span);
+        } else {
+          addDurLabel(blk, (b.eh * 60 + b.em) - (b.sh * 60 + b.sm), b.t);
+        }
+        bar.appendChild(blk);
+      });
+
+      // Gap labels (finestre di veglia — zone non colorate)
+      const allSegs = day.wh !== null ? [{ s: 7 * 60, e: day.wh * 60 + day.wm }] : [];
+      day.blocks.forEach(function(b) { allSegs.push({ s: b.sh * 60 + b.sm, e: b.eh * 60 + b.em }); });
+      allSegs.sort(function(a, b) { return a.s - b.s; });
+      for (let i = 0; i < allSegs.length - 1; i++) {
+        const gapS = allSegs[i].e;
+        const gapE = allSegs[i + 1].s;
+        const gapMin = gapE - gapS;
+        if (gapMin < 30) continue;
+        const gapLbl = document.createElement('div');
+        gapLbl.style.cssText =
+          'position:absolute;top:0;bottom:0;' +
+          'left:' + ((gapS - 7 * 60) / SPAN * 100) + '%;' +
+          'width:' + (gapMin / SPAN * 100) + '%;' +
+          'display:flex;align-items:center;justify-content:center;' +
+          'font-size:0.52rem;font-weight:600;color:var(--muted);pointer-events:none;';
+        gapLbl.textContent = (gapMin / 60).toFixed(1) + 'h';
+        bar.appendChild(gapLbl);
+      }
+
+      row.appendChild(lbl);
+      row.appendChild(bar);
+      grid.appendChild(row);
+    });
+  })();
+</script>
+
+</body>
+</html>
